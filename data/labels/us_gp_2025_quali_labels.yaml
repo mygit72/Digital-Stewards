@@ -1,0 +1,27 @@
+# Real onboards, 2025 United States GP QUALIFYING (F1 TV, recorded 2026-11-18 by us) - TRAINING data.
+# Same rule as the sprint file: OUT only if the inside front tyre is fully beyond the blue-white edge strip; judged
+# by eye 2026-11-19 from zooms of every v12 flag (runs/real_cota2025/quali/flags_v12.csv).
+# Quali clock: FIA deletion stamp = player time + ~15:54:52 (matched on ALB L4, NOR L5, STR L7, GAS L11, HAM L12,
+# BEA L14 - steady to ~2 s, unlike the sprint), checked against the picture: every deletion located by eye in the driver's clip (2026-11-19: each
+# recorded clip contains the moment; the clock alone can be 30-45 s out).
+blocks: runs/real_cota2025/quali/blocks.csv
+train_drivers: [ALB, NOR, STR, GAS, HAM, BEA, HUL, LAW, SAI]     # whole session = training
+out:
+  - {name: BEA_L14_T5,  block: 10, from: "0:54:23.2", to: "0:54:24.4"}   # both fronts deep in the painted run-off
+unsure:
+  - {name: ALB_L4_T12,  block: 0,  from: "0:22:18.0", to: "0:22:19.0"}   # left-front ON the strip
+  - {name: NOR_L5_T9,   block: 2,  from: "0:26:44.0", to: "0:26:45.6"}   # left-front on the white band (T9 pattern)
+  - {name: STR_L7_T12,  block: 4,  from: "0:32:51.6", to: "0:32:52.6"}   # left-front ON the strip
+  - {name: ALB_L9_T12,  block: 5,  from: "0:34:28.0", to: "0:34:29.0"}   # v12 flag, left-front at the strip
+  - {name: ALB_L9_T15,  block: 5,  from: "0:34:41.0", to: "0:34:42.4"}   # found by picture; left-front reaches the strip
+  - {name: GAS_L11_T20, block: 6,  from: "0:45:46.6", to: "0:45:51.2"}   # left-front on the white band
+  - {name: HAM_L12_T5,  block: 8,  from: "0:54:21.0", to: "0:54:23.0"}   # right-front stays on tarmac
+  - {name: HUL_L14_T9,  block: 11, from: "0:54:07.2", to: "0:54:08.0"}   # T9 pattern, lap deleted for T19
+  - {name: HUL_L14_T12, block: 11, from: "0:54:35.4", to: "0:54:36.2"}   # left-front at the strip
+  - {name: HUL_L14_T19, block: 11, from: "0:54:59.8", to: "0:55:01.4"}   # found by picture; glare, right-front on tarmac
+  - {name: LAW_L14_T12, block: 12, from: "0:55:14.4", to: "0:55:16.0"}   # left-front at the strip
+  - {name: LAW_L14_T19, block: 12, from: "0:55:39.4", to: "0:55:41.2"}   # found by picture; straddles the edge
+  - {name: SAI_L14_T19, block: 13, from: "0:56:04.0", to: "0:56:06.0"}   # found by picture; left-front on tarmac
+  - {name: BEA_L19_T15, block: 14, from: "1:16:10.6", to: "1:16:12.2"}   # found by picture (footage recovered by the OCR fix)
+hard_in:
+  - {block: 11, from: "0:54:04.6", to: "0:54:06.0"}   # car on tarmac, kerb ahead

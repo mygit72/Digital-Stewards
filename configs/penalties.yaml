@@ -1,0 +1,12 @@
+# Track-limits penalties used by the steward log / dashboard (src/digital_stewards/penalties.py).
+# FIA race practice (2023+): every offence deletes the lap time; black-and-white flag after the 3rd;
+# 5-second time penalty for the 4th; further offences are reported to the stewards.
+# To use "3 offences = 5 s" instead: penalties: {3: 5}
+out_thr: 0.5        # model p(out) threshold
+min_dur_s: 0.2      # shortest OUT episode that counts as an offence = 2 frames at 10 Hz. 2026-11-19, NOR 2025
+                    # race: the real deletions last 0.3-1.0 s, the 3 false alarms were single frames (0.1 s)
+                    # and would have given a false black-and-white flag + 5 s penalty
+merge_s: 3.0        # OUT episodes this close are one offence (same corner)
+bw_flag_after: 3
+penalties: {4: 5}   # offence number -> seconds
+report_after: 4

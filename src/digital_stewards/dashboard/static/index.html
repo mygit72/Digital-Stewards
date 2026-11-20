@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Steward Desk</title>
+<style>
+:root{
+  --bg:#0e1013; --panel:#161a1f; --panel2:#1c2128; --line:#2a3039; --text:#e8ebef; --dim:#8b94a1;
+  --in:#3fb27f; --out:#e5484d; --flag:#f5f5f5; --pen:#f0a020; --skip:#5b6472; --accent:#4c8dff;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.4 system-ui,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+header h1{font-size:15px;margin:0;letter-spacing:.08em;text-transform:uppercase}
+header h1 span{color:var(--out)}
+select,button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+button.on{border-color:var(--accent);color:#fff;background:#203457}
+.grow{flex:1}
+main{height:calc(100% - 53px)}
+/* single view */
+#single{display:flex;height:100%;gap:0}
+#left{flex:1 1 68%;display:flex;flex-direction:column;padding:12px;gap:8px;min-width:0}
+#left video{width:100%;flex:1;min-height:0;background:#000;border-radius:8px}
+#verdict{display:flex;align-items:center;gap:10px;font-family:var(--mono)}
+.badge{padding:3px 10px;border-radius:4px;font-weight:700;letter-spacing:.06em;font-size:13px}
+.b-in{background:#173b2b;color:var(--in)} .b-out{background:#4a1a1c;color:#ff6b70}
+.b-skip{background:#262b33;color:var(--dim)} .b-wait{background:#262b33;color:var(--accent)}
+canvas.tl{width:100%;height:64px;background:var(--panel);border-radius:6px;cursor:pointer;display:block}
+#right{flex:0 0 380px;border-left:1px solid var(--line);display:flex;flex-direction:column;background:var(--panel);min-width:0}
+.card{padding:12px 14px;border-bottom:1px solid var(--line)}
+.title{font-weight:600;font-size:15px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub{color:var(--dim);font-size:12px}
+.progress{height:4px;background:var(--panel2);border-radius:2px;margin-top:8px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--panel2);border-radius:6px;padding:8px}
+.stat b{display:block;font-size:22px;font-family:var(--mono)}
+.stat small{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.bw{display:inline-block;width:18px;height:12px;vertical-align:middle;background:linear-gradient(135deg,#fff 50%,#111 50%);border:1px solid #888}
+#log{flex:1;overflow:auto;padding:6px 0}
+.ev{display:flex;gap:10px;padding:7px 14px;border-left:3px solid transparent;cursor:pointer}
+.ev:hover{background:var(--panel2)}
+.ev time{font-family:var(--mono);color:var(--dim);flex:0 0 64px}
+.ev.offence{border-left-color:var(--out)} .ev.penalty{border-left-color:var(--pen)} .ev.penalty span{color:var(--pen);font-weight:600}
+.ev.flag{border-left-color:var(--flag)} .ev.flag span{font-weight:600} .ev.report{border-left-color:var(--pen)}
+.ev.skip{border-left-color:var(--skip)} .ev.skip span{color:var(--dim)} .ev.carry{border-left-color:var(--accent)}
+.ev.fresh{animation:fresh 1.2s ease-out}
+@keyframes fresh{from{background:#2d3a52}to{background:transparent}}
+.empty{color:var(--dim);padding:14px}
+/* multi view */
+#multi{display:none;height:100%;padding:12px;gap:12px;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;overflow:auto}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.tile .head{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--line)}
+.tile .head select{flex:1;min-width:0}
+.tile video{width:100%;flex:1;min-height:0;background:#000}
+.tile .mini{display:flex;gap:12px;padding:6px 10px;font-family:var(--mono);font-size:12px;align-items:center}
+.tile .last{padding:0 10px 8px;font-size:12px;color:var(--dim);height:54px;overflow:hidden}
+.tile canvas.tl{height:28px;border-radius:0}
+/* track-position box + race report */
+.telebox{display:none;gap:12px;align-items:center;background:var(--panel2);border-radius:6px;padding:6px 10px}
+.telebox.on{display:flex}
+.telebox canvas{width:190px;height:112px;flex:0 0 190px}
+.telebox .tv{display:grid;grid-template-columns:auto auto;gap:3px 14px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.telebox .tv b{color:var(--text);font-weight:600} .telebox .bad{color:#ff6b70} .telebox .good{color:var(--in)}
+.telebox .lbl{font:600 10px system-ui;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);grid-column:1/3}
+.tile,#left{position:relative}
+.report{position:absolute;inset:0;background:rgba(14,16,19,.97);z-index:5;overflow:auto;padding:18px 20px;display:none;border-radius:8px}
+.report.on{display:block}
+.report h2{margin:0 0 2px;font-size:18px} .report .sub{margin-bottom:12px}
+.report .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 14px}
+.report .kpis div{background:var(--panel2);border-radius:6px;padding:8px} .report .kpis b{display:block;font:700 20px var(--mono)}
+.report .kpis small{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.report table{width:100%;border-collapse:collapse;font-size:13px} .report td,.report th{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left}
+.report th{color:var(--dim);font-weight:500;font-size:11px;text-transform:uppercase}
+.report td.k-offence{color:#ff6b70} .report td.k-penalty{color:var(--pen)} .report td.k-flag{font-weight:700}
+.report .btns{display:flex;gap:8px;margin-top:14px}
+@media (max-width:900px){#single{flex-direction:column}#right{flex:1 1 auto;border-left:0;border-top:1px solid var(--line)}#multi{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Steward <span>Desk</span></h1>
+  <select id="pick" title="Recording"></select>
+  <div class="grow"></div>
+  <button id="bSingle" class="on">Single</button>
+  <button id="bMulti">Multi-view</button>
+  <button id="bPlayAll" style="display:none">Play / pause all</button>
+</header>
+<main>
+  <section id="single">
+    <div id="left">
+      <div class="telebox" id="tbox"><canvas></canvas><div class="tv"></div></div>
+      <video id="vid" controls preload="metadata"></video>
+      <div class="report" id="srep"></div>
+      <div id="verdict"><span class="badge b-wait" id="vbadge">-</span><span id="vtext" class="sub"></span><div class="grow"></div><span id="clock" class="sub"></span></div>
+      <canvas class="tl" id="tl"></canvas>
+    </div>
+    <aside id="right">
+      <div class="card">
+        <div class="title" id="rname">No recordings yet</div>
+        <div class="sub" id="rsub">Add one: <code>digital-stewards dashboard add &lt;video&gt; --name ... --profile game</code></div>
+        <div class="progress"><i id="prog"></i></div>
+      </div>
+      <div class="card stats">
+        <div class="stat"><small>Track limits</small><b id="sOff">0</b></div>
+        <div class="stat"><small>Flag</small><b id="sFlag">-</b></div>
+        <div class="stat"><small>Penalty</small><b id="sPen">0 s</b></div>
+      </div>
+      <div id="log"><div class="empty">The steward log fills in as the recording plays.</div></div>
+    </aside>
+  </section>
+  <section id="multi"></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const fmt = t => { if (t == null || isNaN(t)) return "--:--"; const h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60;
+  return (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + s.toFixed(1).padStart(4, "0"); };
+const recs = {};          // id -> {meta, state, tl: {t:[], p:[], s:[]}, next}
+
+async function loadList() {
+  const list = await (await fetch("/api/recordings")).json();
+  for (const m of list) recs[m.id] = Object.assign(recs[m.id] || {tl: {t: [], p: [], s: []}, next: 0, state: {}}, {meta: m});
+  const pick = $("#pick"), cur = pick.value;
+  pick.innerHTML = list.map(m => `<option value="${m.id}">${m.name}</option>`).join("") || "<option>(none)</option>";
+  if (cur && recs[cur]) pick.value = cur;
+  return list;
+}
+async function loadTel(r) {
+  if (r.tel !== undefined || !r.meta.trackpos) return;
+  r.tel = null; const j = await (await fetch(`/api/rec/${r.meta.id}/trackpos`)).json(); if (!j) return;
+  const xs = j.track.map(p => p[0]), zs = j.track.map(p => p[1]);
+  j.box = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)]; r.tel = j;
+}
+async function refresh(id) {
+  const r = recs[id]; if (!r) return; loadTel(r);
+  if (r.state.status === "done" && r.doneSynced) return;
+  r.state = await (await fetch(`/api/rec/${id}/state`)).json();
+  if (r.state.run !== r.run) { r.run = r.state.run; r.tl = {t: [], p: [], s: []}; r.next = 0; r.doneSynced = false; }  // (re)started
+  const res = await fetch(`/api/rec/${id}/timeline?from=${r.next}`);
+  r.next = +res.headers.get("X-Next");
+  for (const line of (await res.text()).split("\n")) {
+    if (!line) continue; const [t, p, s] = line.split(",").map(Number); r.tl.t.push(t); r.tl.p.push(p); r.tl.s.push(s);
+  }
+  if (r.state.status === "done") r.doneSynced = true;
+}
+// events = steward log + camera skip windows, in time order
+function events(r) {
+  const ev = (r.state.log || []).map(e => ({...e}));
+  for (const [a, b] of r.state.skips || []) ev.push({t: Math.max(0, a), kind: "skip", text: `Camera is not the onboard view (${stamp(r, Math.max(0, a))} - ${stamp(r, b)}) - no verdict`});
+  return ev.sort((x, y) => x.t - y.t);
+}
+// F1 TV player clock (meta.clock = [[rec_t0, rec_t1, offset], ...]); null when the recording has none
+function playerT(r, t) { for (const [a, b, off] of r.meta.clock || []) if (t >= a - 1 && t <= b + 1) return t + off; return null; }
+function stamp(r, t) { const p = playerT(r, t); return p == null ? fmt(t) : fmt(p); }
+function counts(r, ev) {
+  const st = r.state, offs = (st.carry_offences || 0) + ev.filter(e => e.kind === "offence").length;
+  const pen = (st.carry_penalty_s || 0) + ev.filter(e => e.kind === "penalty").reduce((a, e) => a + (e.penalty_s || 0), 0);
+  return {offs, pen, flag: ev.some(e => e.kind === "flag") || (st.carry_offences || 0) >= 3};
+}
+function idxAt(arr, t) { let lo = 0, hi = arr.length - 1; if (hi < 0) return -1;
+  while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (arr[mid] <= t) lo = mid; else hi = mid - 1; } return arr[lo] <= t ? lo : -1; }
+function verdictAt(r, t) {
+  const st = r.state; if (!st.status || st.status === "queued" || st.status === "reference") return ["wait", "ANALYSING"];
+  if (t > (st.processed_until || 0) + 0.2) return ["wait", "ANALYSING"];
+  for (const [a, b] of st.skips || []) if (t >= a && t <= b) return ["skip", "NO VERDICT"];
+  const i = idxAt(r.tl.t, t); if (i < 0) return ["wait", "-"];
+  if (r.tl.s[i] < (st.cam_thr || 0.55)) return ["skip", "NO VERDICT"];
+  return r.tl.p[i] >= 0.5 ? ["out", "OUT"] : ["in", "IN"];
+}
+function drawTL(cv, r, t) {
+  const W = cv.width = cv.clientWidth * devicePixelRatio, H = cv.height = cv.clientHeight * devicePixelRatio, ctx = cv.getContext("2d");
+  const st = r.state, dur = st.duration || r.tl.t[r.tl.t.length - 1] || 1, x = v => v / dur * W;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#1c2128"; ctx.fillRect(0, 0, x(st.processed_until || 0), H);            // analysed part
+  ctx.fillStyle = "rgba(91,100,114,.55)"; for (const [a, b] of st.skips || []) ctx.fillRect(x(a), 0, Math.max(2, x(b) - x(a)), H);
+  // p(out): max per pixel column
+  const cols = new Float32Array(Math.ceil(W)).fill(-1);
+  for (let i = 0; i < r.tl.t.length; i++) { const c = Math.min(cols.length - 1, x(r.tl.t[i]) | 0); if (r.tl.p[i] > cols[c]) cols[c] = r.tl.p[i]; }
+  for (let c = 0; c < cols.length; c++) { if (cols[c] < 0) continue; const v = cols[c];
+    ctx.fillStyle = v >= .5 ? "#e5484d" : "rgba(63,178,127,.45)"; const h = Math.max(1, v * (H - 6)); ctx.fillRect(c, H - h, 1, h); }
+  ctx.fillStyle = "#f0a020"; for (const e of st.log || []) if (e.kind === "offence") ctx.fillRect(x(e.t) - 1, 0, 3 * devicePixelRatio, 6 * devicePixelRatio);
+  ctx.fillStyle = "#fff"; ctx.fillRect(x(t) - 1, 0, 2 * devicePixelRatio, H);
+}
+function seekOnClick(cv, vid, r) { cv.onclick = e => { const d = r.state.duration; if (d) vid.currentTime = e.offsetX / cv.clientWidth * d; }; }
+
+// ---------- track-position box (optional, needs trackpos.json) ----------
+function telAt(r, t) { const S = r.tel.samples; return S[Math.max(0, Math.min(S.length - 1, Math.round(t * 10)))]; }
+function drawTele(box, r, t) {
+  if (!r.tel) { box.classList.remove("on"); return; } box.classList.add("on");
+  const cv = box.querySelector("canvas"), W = cv.width = cv.clientWidth * devicePixelRatio, H = cv.height = cv.clientHeight * devicePixelRatio;
+  const ctx = cv.getContext("2d"), [x0, x1, z0, z1] = r.tel.box, sc = Math.min((W - 12) / (x1 - x0), (H - 12) / (z1 - z0));
+  const ox = (W - (x1 - x0) * sc) / 2, oz = (H - (z1 - z0) * sc) / 2, P = (x, z) => [ox + (x - x0) * sc, oz + (z - z0) * sc];
+  ctx.clearRect(0, 0, W, H); ctx.lineWidth = 3 * devicePixelRatio; ctx.strokeStyle = "#3a414c"; ctx.lineJoin = "round"; ctx.beginPath();
+  r.tel.track.forEach(([x, z], i) => { const [a, b] = P(x, z); i ? ctx.lineTo(a, b) : ctx.moveTo(a, b); }); ctx.closePath(); ctx.stroke();
+  for (const e of (r.state.log || [])) if (e.kind === "offence" && e.t <= t) {
+    const s = telAt(r, e.t), [a, b] = P(s[1], s[2]); ctx.fillStyle = "#e5484d"; ctx.beginPath(); ctx.arc(a, b, 4 * devicePixelRatio, 0, 7); ctx.fill(); }
+  const s = telAt(r, t), [a, b] = P(s[1], s[2]), [v] = verdictAt(r, t);
+  ctx.fillStyle = v === "out" ? "#ff6b70" : "#fff"; ctx.strokeStyle = "#0e1013"; ctx.lineWidth = 2 * devicePixelRatio;
+  ctx.beginPath(); ctx.arc(a, b, 5.5 * devicePixelRatio, 0, 7); ctx.fill(); ctx.stroke();
+  box.querySelector(".tv").innerHTML = `<span class="lbl">Car on track</span><span>speed</span><b>${s[3]} km/h</b>
+    <span>lap dist</span><b>${s[5]} m</b>`;
+}
+// ---------- race report (shown when a recording ends) ----------
+function report(r) {
+  const ev = events(r), c = counts(r, ev), st = r.state, dur = st.duration || 0, rows = [];
+  for (const e of ev) { const s = r.tel ? telAt(r, e.t) : null;
+    rows.push({t: e.t, kind: e.kind, text: e.text.replace(/ - /g, " – "), lap: s ? s[4] : "", dist: s ? s[5] : "", kmh: s ? s[3] : ""}); }
+  let gw = 0, inv = 0;                         // the game's own verdicts in the same footage (never across a cut)
+  if (r.tel) { const S = r.tel.samples, cuts = new Set((r.meta.cuts || []).map(x => Math.round(x * 10)));
+    for (let i = 1; i < S.length; i++) { if (cuts.has(i)) continue; gw += Math.max(0, S[i][7] - S[i - 1][7]); if (S[i][6] && !S[i - 1][6]) inv++; } }
+  return {name: r.meta.name, dur, c, rows, gw, inv, flagT: (ev.find(e => e.kind === "flag") || {}).t,
+          reported: ev.filter(e => e.kind === "report").length, skips: (st.skips || []).length, tel: !!r.tel};
+}
+function reportHTML(R) {
+  const tr = R.rows.map(x => `<tr><td>${fmt(x.t)}</td><td class="k-${x.kind}">${x.text}</td><td>${x.dist !== "" ? x.dist + " m" : ""}</td><td>${x.kmh !== "" ? x.kmh + " km/h" : ""}</td></tr>`).join("");
+  return `<h2>Race report – ${R.name}</h2><div class="sub">Recording ended at ${fmt(R.dur)} · steward: v13 classifier + camera gate · FIA escalation (B&W flag after 3, 5 s for the 4th)</div>
+    <div class="kpis"><div><small>Track limits</small><b>${R.c.offs}</b></div><div><small>Flag</small><b>${R.c.flag ? '<span class="bw"></span> ' + fmt(R.flagT) : "none"}</b></div>
+    <div><small>Penalty</small><b>${R.c.pen} s</b></div><div><small>Reported</small><b>${R.reported}</b></div></div>
+    ${R.skips ? `<div class="sub">${R.skips} stretch(es) with no verdict (camera not on the onboard view)</div>` : ""}
+    <table><tr><th>Time</th><th>Steward decision</th><th>Lap dist</th><th>Speed</th></tr>${tr || '<tr><td colspan="4">No decisions - clean run.</td></tr>'}</table>
+    <div class="btns"><button data-a="dl">Download report</button><button data-a="replay">Replay</button><button data-a="close">Close</button></div>`;
+}
+function reportText(R) {
+  return [`RACE REPORT - ${R.name}`, `Recording length ${fmt(R.dur)}`, `Track-limits offences: ${R.c.offs}`,
+    `Black-and-white flag: ${R.c.flag ? "yes at " + fmt(R.flagT) : "no"}`, `Time penalties: ${R.c.pen} s`, `Reported to the stewards: ${R.reported}`,
+    "", "Time   | Lap dist | Speed | Decision",
+    ...R.rows.map(x => `${fmt(x.t).padEnd(6)} | ${String(x.dist).padEnd(8)} | ${String(x.kmh).padEnd(5)} | ${x.text}`)].join("\n");
+}
+function showReport(box, r, video) {
+  const R = report(r); box.innerHTML = reportHTML(R); box.classList.add("on");
+  box.onclick = e => { const a = e.target.dataset.a; if (!a) return;
+    if (a === "dl") { const u = URL.createObjectURL(new Blob([reportText(R)], {type: "text/plain"})); const l = document.createElement("a");
+      l.href = u; l.download = R.name.replace(/[^a-z0-9]+/gi, "_") + "_report.txt"; l.click(); }
+    if (a === "replay") { box.classList.remove("on"); video.currentTime = 0; video.play(); }
+    if (a === "close") box.classList.remove("on"); };
+}
+
+// ---------- single view ----------
+let curId = null, shown = -1, shownSig = "";
+const vid = $("#vid");
+function openRec(id) {
+  curId = id; shown = -1; shownSig = ""; const r = recs[id]; if (!r) return;
+  vid.src = `/api/rec/${id}/video`; $("#rname").textContent = r.meta.name; $("#log").innerHTML = ""; $("#srep").classList.remove("on");
+  vid.onended = () => showReport($("#srep"), recs[curId], vid); vid.onplay = () => $("#srep").classList.remove("on");
+  seekOnClick($("#tl"), vid, r);
+}
+function renderSingle() {
+  const r = recs[curId]; if (!r) return; const t = vid.currentTime || 0, st = r.state;
+  const pct = st.duration ? Math.min(100, 100 * (st.processed_until || 0) / st.duration) : 0;
+  $("#prog").style.width = pct + "%";
+  $("#rsub").textContent = st.status === "done" ? `Analysed - ${fmt(st.duration)} - model ${r.meta.weights.split("/").pop()}`
+    : st.status === "running" ? `Live: steward has analysed ${fmt(st.processed_until)} of ${fmt(st.duration)} (${pct.toFixed(0)}%)`
+    : st.status === "reference" ? "Learning this onboard camera..." : st.status === "waiting" ? `Waiting for ${st.waiting_for} (previous part) to finish` : "Queued";
+  const [k, label] = verdictAt(r, t); const b = $("#vbadge"); b.className = "badge b-" + k; b.textContent = label;
+  $("#vtext").textContent = k === "skip" ? "not the forward onboard camera" : k === "wait" ? "steward has not reached this point yet" : "";
+  const pt = playerT(r, t);
+  $("#clock").textContent = (pt != null ? "F1 TV " + fmt(pt) + "  |  " : "") + "rec " + fmt(t) + " / " + fmt(st.duration);
+  // log up to the playhead
+  const ev = events(r).filter(e => e.t <= t);
+  const c = counts(r, ev);
+  $("#sOff").textContent = c.offs; $("#sPen").textContent = c.pen + " s";
+  $("#sFlag").innerHTML = c.flag ? '<span class="bw"></span>' : "-";
+  const sig = ev.length + "|" + ev.map(e => e.t + e.text).join("|");      // re-render when any entry changes
+  if (sig !== shownSig) {
+    const fresh = ev.length > shown && shown >= 0;
+    $("#log").innerHTML = ev.length ? ev.slice().reverse().map((e, i) => `<div class="ev ${e.kind}${fresh && i < ev.length - shown ? " fresh" : ""}" data-t="${e.t}"><time>${stamp(r, e.t)}</time><span>${e.text}</span></div>`).join("")
+      : '<div class="empty">Nothing yet - play the recording.</div>';
+    shown = ev.length; shownSig = sig;
+  }
+  drawTL($("#tl"), r, t); drawTele($("#tbox"), r, t);
+}
+$("#log").onclick = e => { const d = e.target.closest(".ev"); if (d) vid.currentTime = +d.dataset.t; };
+
+// ---------- multi view ----------
+const tiles = [];
+function buildMulti() {
+  const ids = Object.keys(recs), box = $("#multi"); box.innerHTML = ""; tiles.length = 0;
+  for (let k = 0; k < Math.min(4, Math.max(1, ids.length)); k++) {
+    const el = document.createElement("div"); el.className = "tile";
+    el.innerHTML = `<div class="head"><select>${ids.map(i => `<option value="${i}">${recs[i].meta.name}</option>`).join("")}</select></div>
+      <div class="telebox"><canvas></canvas><div class="tv"></div></div>
+      <video controls preload="metadata" muted></video><canvas class="tl"></canvas><div class="report"></div>
+      <div class="mini"><span class="badge b-wait">-</span><span>TL <b class="o">0</b></span><span class="f"></span><span>PEN <b class="p">0 s</b></span><span class="grow"></span><span class="c"></span></div>
+      <div class="last"></div>`;
+    box.appendChild(el);
+    const tile = {el, sel: el.querySelector("select"), vid: el.querySelector("video"), cv: el.querySelector("canvas.tl"),
+                  tbox: el.querySelector(".telebox"), rep: el.querySelector(".report")};
+    tile.vid.onended = () => showReport(tile.rep, recs[tile.id], tile.vid); tile.vid.onplay = () => tile.rep.classList.remove("on");
+    tile.sel.value = ids[k % ids.length]; const set = () => { tile.id = tile.sel.value; tile.vid.src = `/api/rec/${tile.id}/video`; seekOnClick(tile.cv, tile.vid, recs[tile.id]); };
+    tile.sel.onchange = set; set(); tiles.push(tile);
+  }
+}
+function renderMulti() {
+  for (const tl of tiles) {
+    const r = recs[tl.id]; if (!r) continue; const t = tl.vid.currentTime || 0, [k, label] = verdictAt(r, t), el = tl.el;
+    const b = el.querySelector(".badge"); b.className = "badge b-" + k; b.textContent = label;
+    const ev = events(r).filter(e => e.t <= t);
+    const c = counts(r, ev);
+    el.querySelector(".o").textContent = c.offs; el.querySelector(".p").textContent = c.pen + " s";
+    el.querySelector(".f").innerHTML = c.flag ? '<span class="bw"></span>' : "";
+    el.querySelector(".c").textContent = stamp(r, t);
+    el.querySelector(".last").innerHTML = ev.slice(-3).reverse().map(e => `<div>${stamp(r, e.t)} ${e.text}</div>`).join("");
+    drawTL(tl.cv, r, t); drawTele(tl.tbox, r, t);
+  }
+}
+
+// ---------- wiring ----------
+let mode = "single";
+function setMode(m) {
+  mode = m; $("#single").style.display = m === "single" ? "flex" : "none"; $("#multi").style.display = m === "multi" ? "grid" : "none";
+  $("#bSingle").classList.toggle("on", m === "single"); $("#bMulti").classList.toggle("on", m === "multi");
+  $("#pick").style.display = m === "single" ? "" : "none"; $("#bPlayAll").style.display = m === "multi" ? "" : "none";
+  if (m === "multi") { vid.pause(); buildMulti(); } else tiles.forEach(t => t.vid.pause());
+}
+$("#bSingle").onclick = () => setMode("single"); $("#bMulti").onclick = () => setMode("multi");
+$("#bPlayAll").onclick = () => { const play = tiles.some(t => t.vid.paused); tiles.forEach(t => play ? t.vid.play() : t.vid.pause()); };
+$("#pick").onchange = e => openRec(e.target.value);
+
+(async () => {
+  const list = await loadList();
+  if (list.length) { await Promise.all(list.map(m => refresh(m.id))); openRec(list[list.length - 1].id); $("#pick").value = curId; }
+  setInterval(async () => {
+    const ids = mode === "single" ? [curId] : [...new Set(tiles.map(t => t.id))];
+    await Promise.all(ids.filter(Boolean).map(refresh));
+  }, 1000);
+  setInterval(loadList, 5000);
+  (function loop() { mode === "single" ? renderSingle() : renderMulti(); requestAnimationFrame(loop); })();
+})();
+</script>
+</body>
+</html>

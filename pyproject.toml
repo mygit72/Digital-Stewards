@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "digital-stewards"
+version = "1.0.0"
+description = "Track-limits decisions from onboard video: an OUT/IN classifier, a camera gate, FIA-style penalties and a live steward dashboard."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "ultralytics>=8.3",
+    "opencv-python",
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "aiohttp",
+    "imageio-ffmpeg",
+]
+
+[project.optional-dependencies]
+f1tv = ["rapidocr-onnxruntime"]      # reading the F1 TV player clock in tools/f1tv_ocr_blocks.py
+dev = ["pytest"]
+
+[project.scripts]
+digital-stewards = "digital_stewards.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+digital_stewards = ["dashboard/static/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

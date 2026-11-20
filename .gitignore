@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Data and outputs (large / not ours to share) - see README "Data"
+datasets/
+recordings/
+runs/
+*.mp4
+*.mkv
+*.mov
+*.avi
+
+# Base weights Ultralytics downloads on first train
+yolov8*-cls.pt
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

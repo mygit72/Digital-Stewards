@@ -1,0 +1,57 @@
+# Real onboards, 2025 United States GP SPRINT (F1 TV, recorded 2026-11-18 by us) - TRAINING data.
+# OUT windows = FIA-deleted laps (runs/real_cota2025/deleted_laps_2025_usa.csv) judged by eye 2026-11-19 from full-res
+# zooms of the inside front tyre: OUT only if it is fully beyond the blue-white edge strip (on the kerb / run-off).
+# Times = F1 TV player time (block offsets in blocks.csv). Candidates came from the v12 CPU scan
+# (runs/real_cota2025/sprint/flags_v12.csv - NOTE its driver column says ANT for block 14, which is BEA).
+blocks: runs/real_cota2025/sprint/blocks.csv
+train_drivers: [BOR, RUS, HUL, COL, LAW, HAD, HAM, OCO, BEA, ANT]     # whole sprint = training
+out:
+  - {name: RUS_L8_T12,  block: 2,  from: "0:24:21.4", to: "0:24:22.4"}
+  - {name: COL_L8_T12,  block: 5,  from: "0:24:39.9", to: "0:24:40.3"}
+  - {name: BEA_L14_T15, block: 14, from: "0:34:38.4", to: "0:34:38.6"}
+# Deleted (or in an already-deleted lap) but not confirmable from the inside FRONT tyre: left out (+-2.5 s).
+# T9: every one of the 7 T9 deletions keeps the left-front tyre on the wide white band inside the blue strip; the
+# left-rear (tighter line, out of view) is presumably what went over. v12 calls them OUT with p ~1.0.
+unsure:
+  - {name: BOR_L6_T9,   block: 0,  from: "0:20:48.0", to: "0:20:49.2"}
+  - {name: BOR_L7_T9,   block: 0,  from: "0:22:27.2", to: "0:22:28.6"}
+  - {name: RUS_L7_T15,  block: 1,  from: "0:22:57.5", to: "0:23:00.5"}   # left-front stays left of the band
+  - {name: HUL_L8_T9,   block: 3,  from: "0:24:06.6", to: "0:24:07.8"}
+  - {name: HUL_L12_T9,  block: 4,  from: "0:30:45.4", to: "0:30:46.0"}   # lap deleted for T11
+  - {name: HUL_L12_T11, block: 4,  from: "0:30:56.5", to: "0:31:00.0"}   # left tyres on tarmac in view
+  - {name: COL_L13_T12, block: 6,  from: "0:32:59.2", to: "0:33:00.4"}   # left-front ON the strip
+  - {name: LAW_L9_T9,   block: 7,  from: "0:25:43.8", to: "0:25:45.0"}
+  - {name: LAW_L9_T11,  block: 7,  from: "0:25:55.0", to: "0:26:05.0"}   # T11 not located; wide window
+  - {name: LAW_L9_T12,  block: 7,  from: "0:26:12.6", to: "0:26:14.4"}   # v12 flag, left-front at the strip
+  - {name: HAD_L9_T9,   block: 8,  from: "0:25:47.6", to: "0:25:48.4"}   # lap deleted for T15
+  - {name: HAD_L9_T15,  block: 8,  from: "0:26:30.5", to: "0:26:33.0"}
+  - {name: HAD_L11_T9,  block: 9,  from: "0:29:06.6", to: "0:29:07.8"}
+  - {name: HAM_L12_T9,  block: 11, from: "0:30:28.8", to: "0:30:30.2"}
+  - {name: HAM_L12_T12, block: 11, from: "0:30:59.0", to: "0:30:59.6"}   # already-deleted lap, left-front at strip
+  - {name: HAM_L13_T9,  block: 11, from: "0:32:07.4", to: "0:32:08.6"}
+  - {name: HAM_L13_T12, block: 11, from: "0:32:37.2", to: "0:32:38.0"}   # already-deleted lap, left-front at strip
+  - {name: OCO_L14_T11, block: 12, from: "0:33:55.0", to: "0:34:20.0"}   # not located; wide window
+  - {name: BEA_L14_T12, block: 14, from: "0:34:24.4", to: "0:34:25.4"}   # left-front at the strip
+  - {name: ANT_L16_T12, block: 15, from: "0:37:59.8", to: "0:38:01.0"}   # left-front ON the strip
+# v12 false alarms, judged IN by eye (car on tarmac, or straddling with the inside tyres on tarmac): dense IN frames.
+hard_in:
+  - {block: 0,  from: "0:20:29.7", to: "0:20:30.1"}
+  - {block: 0,  from: "0:20:34.1", to: "0:20:34.5"}
+  - {block: 0,  from: "0:20:38.5", to: "0:20:39.1"}
+  - {block: 0,  from: "0:21:00.1", to: "0:21:00.9"}
+  - {block: 0,  from: "0:21:04.3", to: "0:21:05.1"}
+  - {block: 0,  from: "0:21:17.7", to: "0:21:18.5"}
+  - {block: 0,  from: "0:21:23.7", to: "0:21:24.1"}
+  - {block: 0,  from: "0:21:25.5", to: "0:21:26.1"}
+  - {block: 0,  from: "0:21:36.9", to: "0:21:37.3"}
+  - {block: 0,  from: "0:21:39.7", to: "0:21:40.1"}
+  - {block: 0,  from: "0:22:09.3", to: "0:22:09.7"}
+  - {block: 0,  from: "0:22:13.3", to: "0:22:13.9"}
+  - {block: 0,  from: "0:22:18.1", to: "0:22:18.5"}
+  - {block: 3,  from: "0:23:57.3", to: "0:23:57.9"}
+  - {block: 4,  from: "0:30:34.7", to: "0:30:35.1"}
+  - {block: 5,  from: "0:24:00.6", to: "0:24:01.4"}
+  - {block: 8,  from: "0:25:33.7", to: "0:25:34.1"}
+  - {block: 8,  from: "0:25:37.9", to: "0:25:38.5"}
+  - {block: 9,  from: "0:28:52.5", to: "0:28:52.9"}
+  - {block: 12, from: "0:33:47.1", to: "0:33:47.5"}

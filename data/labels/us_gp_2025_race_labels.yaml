@@ -1,0 +1,25 @@
+# Real onboard, 2025 United States GP RACE - Lando NORRIS full race (F1 TV replay recorded by us:
+# ../lando1 (1).mp4 + (2).mp4 -> recordings/f1tv/f1tv_2025race_NOR_part{1,2}.mkv). HELD-OUT TEST - never train on it.
+# Clock: excursion player time ~= FIA deletion stamp - 13:55:10 (L13 T20 found by picture at 0:31:11 vs stamp
+# 14:26:21; the same offset put L15 and L19 exactly on their corners).
+# Judged by eye 2026-11-19 from full-res zooms of both front tyres (runs/real_cota2025/race/t_L*.jpg):
+# all three deletions are UNSURE from the onboard - no tyre-level proof that all four left the track.
+#   L13 T20: left-front on the blue-white edge strip, white line under the tyre; rears out of view.
+#   L15 T9 : the sprint T9 pattern - left-front on the wide white band inside the blue strip.
+#   L19 T13: right-front clearly on tarmac the whole time (left-front at the kerb), while battling a Ferrari.
+# So this test has no OUT frames: it measures false OUT calls over ~94 min of real IN driving (+ p_out at the
+# three deletion moments, reported separately).
+blocks: runs/real_cota2025/race/blocks.csv
+train_drivers: []          # everything = val (TEST)
+out: []
+unsure:
+  - {name: NOR_L13_T20, block: 1, from: "0:31:10.4", to: "0:31:12.2"}
+  - {name: NOR_L15_T9,  block: 1, from: "0:33:27.2", to: "0:33:28.8"}
+  - {name: NOR_L19_T13, block: 1, from: "0:40:41.0", to: "0:40:43.0"}
+# Non-standard F1 TV camera views (director switched away from the forward onboard; found by
+# scripts/f1tv_camera_check.py -> runs/real_cota2025/race/camera.csv, each checked by eye). Not IN, not OUT: left out.
+exclude:
+  - {name: CAM_rear_then_side, block: 1, from: "0:25:01", to: "0:29:18"}   # rear-facing camera, then side/halo camera
+  - {name: CAM_halo_1,         block: 1, from: "0:38:18", to: "0:38:24"}   # in-cockpit halo camera
+  - {name: CAM_halo_2,         block: 2, from: "1:16:39", to: "1:16:44"}   # in-cockpit halo camera
+  - {name: CAM_closeup,        block: 2, from: "1:35:32", to: "1:35:37"}   # close-up, compression smear
