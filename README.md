@@ -237,4 +237,4 @@ Not included, on purpose:
 
 An independent project. Not affiliated with, endorsed by or connected to the FIA, Formula 1, F1 TV, EA Sports or
 Codemasters. "F1", "Formula 1" and related marks belong to their owners. F1 25 is a game by EA Sports /
-Codemasters.
+Codemasters. The MIT License applies only to the original source code in this repository and does not grant rights to third-party intellectual property, footage, trademarks, or other copyrighted materials.
